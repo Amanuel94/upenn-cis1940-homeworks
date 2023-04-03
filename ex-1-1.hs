@@ -58,6 +58,7 @@ validate n = (sumDigits(doubleEveryOther(toDigits n))) `mod` 10 == 0
 leng_mv (a, b, n)
     | a == b = n
     | otherwise = leng_mv(a, reverseList_mv((a!!n) : reverseList_mv((b, n)), n+1), n+1)
+length_mv :: Eq a => [a] -> Int
 length_mv a = leng_mv(a, [], 0)
 
 reverseList_mv (a, n)
