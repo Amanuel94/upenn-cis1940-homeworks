@@ -1,9 +1,11 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+{-# OPTIONS_GHC -Wno-overlapping-patterns #-}
 module LogAnalysis where
 import Log
-import Control.Arrow (ArrowChoice(right))
-import Data.Tree (Tree(rootLabel))
+import GHC.Exts.Heap.Closures (GenClosure(FloatClosure))
+
+
 ------------------------------------------------
 
 --Exercise 1
@@ -49,13 +51,32 @@ buildTree msgs n root = buildTree msgs (n-1) (insert (msgs!!(n-1)) root)
 build :: [LogMessage] -> MessageTree
 build msgs = buildTree msgs (length msgs) Leaf
 
+------------------------------------------------
+
+--Exercise 4
+
+inOrder :: MessageTree -> [LogMessage]
+inOrder Leaf = []
+inOrder (Node left msg right) =
+    let left_part = inOrder left
+        whole_part = left_part ++ [msg]
+    in whole_part ++ inOrder right
+
+------------------------------------------------
+
+--Exercise 5
+
+filt :: LogMessage -> Bool
+filt (LogMessage (Error strength) _ _) = strength >= 50
+filt _ = False
+
+filterByErrorStrength :: [LogMessage] -> [LogMessage]
+filterByErrorStrength = filter (filt)
 
 
 
-
-
-
-main = do
-     contents <- testParse parse 10 "error.log"
-     print (contents!!7)
-
+whatWentWrong :: [LogMessage] -> [String]
+whatWentWrong logMsgs = 
+    let sortedMsgs = inOrder (build logMsgs)
+    in map (\(LogMessage _ _ msg) -> msg) (filterByErrorStrength sortedMsgs)
+whatWentWrong _ = []
